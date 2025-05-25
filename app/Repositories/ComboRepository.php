@@ -20,4 +20,18 @@ class ComboRepository implements ComboRepositoryInterface
 
         return $result;
     }
+
+    public function getAll($id_empresa,$id_centro_custo)
+    {
+        $result = Combo::getAll($id_empresa,$id_centro_custo);
+
+        return $result;
+    }
+
+    public function getById($id_combo, $id_empresa)
+    {
+        $result = Combo::getById($id_combo, $id_empresa);
+
+        return $result;
+    }
 }

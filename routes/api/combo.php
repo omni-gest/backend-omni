@@ -17,5 +17,7 @@ use App\Http\Controllers\API\ComboController;
 
 Route::controller(ComboController::class)->group(function () {
     Route::post('', 'create');
+    Route::get('{id_combo}', 'get');
+    Route::get('', 'get');
     Route::put('{id_combo}', 'update');
 });

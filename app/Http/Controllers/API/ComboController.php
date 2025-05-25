@@ -40,6 +40,25 @@ class ComboController extends Controller
         return response()->json($combo, 201);
     }
 
+    public function get(Request $request, $id_combo = null, $id_centro_custo = null) {
+        $id_empresa = $this->getIdEmpresa($request);
+
+        if($id_combo){
+            $data = $this->comboRepository->getById($id_empresa, $id_combo);
+            $data_array = json_decode($data->content());
+
+            if(empty($data_array)){
+                return response()->json([
+                    'error' => 'Combo Não Existe',],400);
+            }
+            return $data;
+        }
+
+        $result = $this->comboRepository->getAll($id_empresa, $id_centro_custo);
+
+        return $result;
+    }
+
     public function update(Request $request, Int $id_combo){
         $id_empresa = $this->getIdEmpresa($request);
 
