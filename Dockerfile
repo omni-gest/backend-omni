@@ -1,5 +1,5 @@
-# Etapa base: PHP 8.1 com extensões comuns para Laravel
-FROM php:8.1-cli
+# Etapa base: PHP 8.2 com extensões comuns para Laravel
+FROM php:8.2-cli
 
 # Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
