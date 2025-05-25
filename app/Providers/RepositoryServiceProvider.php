@@ -42,6 +42,8 @@ use App\Interfaces\FinanceiroRepositoryInterface;
 use App\Repositories\FinanceiroRepository;
 use App\Interfaces\ComboRepositoryInterface;
 use App\Repositories\ComboRepository;
+use App\Interfaces\RelComboMaterialRepositoryInterface;
+use App\Repositories\RelComboMaterialRepository;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -72,6 +74,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(OrigemClienteRepositoryInterface::class, OrigemClienteRepository::class);
         $this->app->bind(FinanceiroRepositoryInterface::class, FinanceiroRepository::class);
         $this->app->bind(ComboRepositoryInterface::class, ComboRepository::class);
+        $this->app->bind(RelComboMaterialRepositoryInterface::class, RelComboMaterialRepository::class);
     }
 
     /**
