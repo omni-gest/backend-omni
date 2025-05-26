@@ -21,11 +21,11 @@ return new class extends Migration
             $table->foreign('id_empresa_eti')
                 ->references('id_empresa_emp')
                 ->on('tb_empresa');
-            $table->unsignedBigInteger('id_centro_custo_eti');
+            $table->unsignedBigInteger('id_estoque_eti');
             $table->string('des_estoque_item_eti')->nullable();
-            $table->foreign('id_centro_custo_eti')
-                ->references('id_centro_custo_cco')
-                ->on('tb_centro_custo');
+            $table->foreign('id_estoque_eti')
+                ->references('id_estoque_est')
+                ->on('tb_estoque');
             $table->float('qtd_estoque_item_eti');
             $table->boolean('is_ativo_eti')->default(true);
             $table->timestamps();

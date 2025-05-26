@@ -98,7 +98,7 @@ class EstoqueItemController extends Controller
 
         $validator = Validator::make(($request_formatted), [
             'des_estoque_item_eti' => 'required|string|max:255',
-            'id_centro_custo_eti' => 'required|integer|exists:tb_centro_custo,id_centro_custo_cco'
+            'id_estoque_eti' => 'required|integer|exists:tb_estoque,id_estoque_est'
         ]);
 
         if ($validator->fails()) {
@@ -107,7 +107,7 @@ class EstoqueItemController extends Controller
 
         $id_empresa = $this->getIdEmpresa($request);
 
-        $estoque = $this->estoqueItemRepository->getByEstoqueMaterial($request->id_centro_custo_eti, $request->id_material_eti);
+        $estoque = $this->estoqueItemRepository->getByEstoqueMaterial($request->id_estoque_eti, $request->id_material_eti);
 
         if ($estoque) {
             return response()->json([
@@ -152,7 +152,7 @@ class EstoqueItemController extends Controller
 
         $request->validate([
             'des_estoque_item_eti' => 'required|string|max:255',
-            'id_centro_custo_eti' => 'required|integer|exists:tb_centro_custo,id_centro_custo_cco'
+            'id_estoque_eti' => 'required|integer|exists:tb_estoque,id_estoque_est'
         ]);
 
         $estoque = $this->estoqueItemRepository->updateReg($id_empresa, $id_estoque_item, $request);

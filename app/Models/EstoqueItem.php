@@ -41,18 +41,18 @@ class EstoqueItem extends Model
         return $data->first();
     }
 
-    public static function get(Int $id_empresa, Int $id_material, Int $id_centro_custo) {
+    public static function get(Int $id_empresa, Int $id_material, Int $id_estoque_eti) {
         $data = EstoqueItem::select([
             'id_estoque_item_eti',
             'id_empresa_eti',
             'id_material_eti',
-            'id_centro_custo_eti',
+            'id_estoque_eti',
             'qtd_estoque_item_eti'
         ])
         ->where('is_ativo_eti', 1)
         ->where('id_empresa_eti', $id_empresa)
         ->where('id_material_eti', $id_material)
-        ->where('id_centro_custo_eti', $id_centro_custo);
+        ->where('id_estoque_eti', $id_estoque_eti);
 
         return $data->first();
     }
