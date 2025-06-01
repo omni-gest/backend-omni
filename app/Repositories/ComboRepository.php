@@ -21,12 +21,16 @@ class ComboRepository implements ComboRepositoryInterface
         return $result;
     }
 
-    public function getAll($id_empresa,$id_centro_custo)
+    public function getAll($id_empresa, $queryParams)
     {
-        $result = Combo::getAll($id_empresa,$id_centro_custo);
+        $result = Combo::getAllFormatado($id_empresa, $queryParams);
 
-        return $result;
+        return response()->json([
+            'items' => $result,
+            'total' => $result->count(),
+        ]);
     }
+
 
     public function getById($id_combo, $id_empresa)
     {
