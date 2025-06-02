@@ -16,6 +16,7 @@ class RelComboMaterial extends Model
     protected $fillable = [
         'id_combo_cbm',
         'id_material_cbm',
+        'qtd_material_cbm',
     ];
 
 }

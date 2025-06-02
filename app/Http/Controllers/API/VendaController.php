@@ -7,6 +7,7 @@ use App\Enums\StatusVendaEnum;
 use App\Http\Controllers\Controller;
 use App\Models\CentroCusto;
 use App\Models\Funcionario;
+use App\Models\RelVendaCombo;
 use App\Models\RelVendaMaterial;
 use App\Models\Material;
 use App\Models\Status;
@@ -15,26 +16,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\API\MaterialMovimentacaoController;
 use App\Interfaces\EstoqueItemRepositoryInterface;
+use App\Interfaces\ComboRepositoryInterface;
 use App\Interfaces\VendaRepositoryInterface;
 use App\Helpers\FormatterValue;
 
 class VendaController extends Controller
 {
-    public function __construct(private MaterialMovimentacaoController $materialMovimentacaoController, private EstoqueItemRepositoryInterface $estoqueItemRepository, private VendaRepositoryInterface $vendaRepository)
+    public function __construct(private MaterialMovimentacaoController $materialMovimentacaoController, private EstoqueItemRepositoryInterface $estoqueItemRepository, private VendaRepositoryInterface $vendaRepository, private ComboRepositoryInterface $comboRepository)
     {
         $this->middleware('auth:api', ['except' => []]);
         $this->materialMovimentacaoController = $materialMovimentacaoController;
         $this->estoqueItemRepository = $estoqueItemRepository;
+        $this->comboRepository = $comboRepository;
     }
 
-    public function getIdEmpresa(Request $request) {
-        $id_empresa = (int)$request->header('id-empresa-d');
+    public function getIdEmpresa(Request $request)
+    {
+        $id_empresa = (int) $request->header('id-empresa-d');
 
         return $id_empresa;
     }
 
-    public function getIdUser(Request $request) {
-        $id_usuario = (int)$request->header('id-usuario-d');
+    public function getIdUser(Request $request)
+    {
+        $id_usuario = (int) $request->header('id-usuario-d');
 
         return $id_usuario;
     }
@@ -72,9 +77,10 @@ class VendaController extends Controller
                 'id_centro_custo_vda' => $request->id_centro_custo_vda,
                 'id_empresa_vda' => $id_empresa,
                 'id_status_vda' => $request->id_status_vda,
+                'id_estoque_vda' => $request->id_estoque_est,
             ]);
 
-            foreach ($request->materiais as $material_venda) {
+            foreach ($request->materiais ?? [] as $material_venda) {
                 RelVendaMaterial::create([
                     'id_venda_rvm' => $venda->id,
                     'id_material_rvm' => $material_venda['id_material_rvm'],
@@ -83,14 +89,53 @@ class VendaController extends Controller
                 ]);
             }
 
+            foreach ($request->comboMateriais ?? [] as $combo_venda) {
+                $combo = $this->comboRepository->getById($combo_venda['id_combo'], $id_empresa);
+
+                RelVendaCombo::create([
+                    'id_venda_rvc' => $venda->id,
+                    'id_combo_rvc' => $combo_venda['id_combo'],
+                    'qtd_combo_rvc' => $combo_venda['qtd_combo'],
+                ]);
+
+                if (!is_array($request->materiais)) {
+                    $request->materiais = [];
+                }
+
+                $materiais = $request->materiais ?? [];
+
+                $materiaisIndexados = [];
+                foreach ($materiais as $mat) {
+                    $materiaisIndexados[$mat['id_material_rvm']] = $mat;
+                }
+
+                foreach ($combo['materiais'] as $material_combo) {
+                    $id = $material_combo->id_material;
+                    $qtd = $material_combo->qtd_material_cbm * $combo_venda['qtd_combo'];
+
+                    if (isset($materiaisIndexados[$id])) {
+                        $materiaisIndexados[$id]['qtd_material_rvm'] += $qtd;
+                    } else {
+                        $materiaisIndexados[$id] = [
+                            'id_material_rvm' => $id,
+                            'vlr_unit_material_rvm' => $material_combo->vlr_material,
+                            'qtd_material_rvm' => $qtd,
+                        ];
+                    }
+                }
+
+                $request->merge(['materiais' => array_values($materiaisIndexados)]);
+            }
+
             $status = Status::getById($request->id_status_vda);
             if ($status->status_sts == StatusVendaEnum::Finalizada->value) {
+
                 $saldoInsuficiente = $this->validarSaldo($request->materiais, $request->id_estoque_est, $id_empresa);
 
                 if (!empty($saldoInsuficiente)) {
                     $mensagem = "Saldo insuficiente para os seguintes materiais:";
                     foreach ($saldoInsuficiente as $item) {
-                        $mensagem .= "\n- Material ID: {$item['id_material']}, Quantidade disponível: {$item['qtd_disponivel']}, Quantidade requerida: {$item['qtd_requerida']}";
+                        $mensagem .= "\n- Material: {$item['des_material_mte']}, Quantidade disponível: {$item['qtd_disponivel']}, Quantidade requerida: {$item['qtd_requerida']}";
                     }
 
                     DB::rollBack();
@@ -106,7 +151,7 @@ class VendaController extends Controller
                             'id_material_mte' => $material['id_material_rvm'],
                             'qtd_material_mit' => $material['qtd_material_rvm'],
                         ];
-                    }, $request->materiais),
+                    }, $request->materiais ?? []),
                     'des_estoque_item_eti' => 'Venda (Saída)',
                 ]);
                 $movimentacaoRequest->headers->set('id-empresa-d', $id_empresa);
@@ -130,7 +175,7 @@ class VendaController extends Controller
     }
 
     // get
-    public function get(Request $request, Int $id_venda = null)
+    public function get(Request $request, int $id_venda = null)
     {
         $id_empresa = $this->getIdEmpresa($request);
 
@@ -138,7 +183,9 @@ class VendaController extends Controller
 
         $filter = $request->only($Venda->getFillable());
 
-        $filter = array_filter($filter, function($reg){ return mb_strtoupper($reg) != "NULL";});
+        $filter = array_filter($filter, function ($reg) {
+            return mb_strtoupper($reg) != "NULL";
+        });
 
         $per_page = $request->query('per_page', 10);
         $page_number = $request->query('page_number', 1);
@@ -147,21 +194,28 @@ class VendaController extends Controller
     }
 
     // get materiais
-    public function getMateriais(Request $request, Int $id_venda = null)
+    public function getMateriais(Request $request, int $id_venda = null)
     {
         $id_empresa = $this->getIdEmpresa($request);
 
         $Venda = new Venda();
         $filter = $request->only($Venda->getFillable());
 
-        $filter = array_filter($filter, function($reg){ return mb_strtoupper($reg) != "NULL";});
-        $data = Venda::getMateriais($id_empresa, $id_venda, $filter);
+        $filter = array_filter($filter, function ($reg) {
+            return mb_strtoupper($reg) != "NULL";
+        });
 
-        return response()->json($data);
+        $materiais = Venda::getMateriais($id_empresa, $id_venda, $filter);
+        $combos = Venda::getCombos($id_empresa, $id_venda, $filter);
+
+        return response()->json([
+            'materiais' => $materiais,
+            'combos' => $combos,
+        ]);
     }
 
     // put
-    public function update(Int $id_venda, Request $request)
+    public function update(int $id_venda, Request $request)
     {
         $id_empresa = $this->getIdEmpresa($request);
         // {
@@ -175,24 +229,21 @@ class VendaController extends Controller
         // }
 
 
-        $data = $request->only(['id_funcionario_vda', 'id_centro_custo_vda', 'id_cliente_ser', 'desc_venda_vda', 'id_status_vda' ]);
+        $data = $request->only(['id_funcionario_vda', 'id_centro_custo_vda', 'id_cliente_ser', 'desc_venda_vda', 'id_status_vda']);
 
-        if (!$data['id_funcionario_vda'])
-        {
+        if (!$data['id_funcionario_vda']) {
             return response()->json([
                 'error' => 'Funcionário é um campo obrigatório.'
             ], 400);
         }
 
-        if (!$data['id_centro_custo_vda'])
-        {
+        if (!$data['id_centro_custo_vda']) {
             return response()->json([
                 'error' => 'Centro de Custo é um campo obrigatório.'
             ], 400);
         }
 
-        if (!$data['id_status_vda'])
-        {
+        if (!$data['id_status_vda']) {
             return response()->json([
                 'error' => 'Status é um campo obrigatório.'
             ], 400);
@@ -200,20 +251,18 @@ class VendaController extends Controller
 
         $venda = Venda::get($id_empresa, $id_venda, null);
 
-        if (!$venda)
-        {
+        if (!$venda) {
             return response()->json([
                 'error' => 'Venda não encontrada.'
             ], 400);
         }
 
-       $status = Status::getById($venda->id_status_vda);
-       if ($status->status_sts == StatusVendaEnum::Finalizada->value)
-       {
-           return response()->json([
-               'error' => 'A venda já foi finalizada e não pode ser alterada.'
-           ], 400);
-       }
+        $status = Status::getById($venda->id_status_vda);
+        if ($status->status_sts == StatusVendaEnum::Finalizada->value) {
+            return response()->json([
+                'error' => 'A venda já foi finalizada e não pode ser alterada.'
+            ], 400);
+        }
 
         $materiaisExcluir = $request->input('idsMateriaisExcluir');
         $materiaisAtualizar = $request->input('materiaisAtualizar');
@@ -227,54 +276,82 @@ class VendaController extends Controller
             }
         }
 
-        if (!empty($materiaisInserir))
-        {
-            foreach($request->materiaisInserir as $material_venda)
-            {
+        if (!empty($materiaisInserir)) {
+            foreach ($request->materiaisInserir as $material_venda) {
                 RelVendaMaterial::create(
-                        [
+                    [
                         'id_venda_rvm' => $id_venda,
                         'id_material_rvm' => $material_venda['id_material_rvm'],
                         'vlr_unit_material_rvm' => $material_venda['vlr_unit_material_rvm'],
                         'qtd_material_rvm' => $material_venda['qtd_material_rvm'],
-                        ]
-                    );
+                    ]
+                );
             }
         }
 
-        if (!empty($materiaisAtualizar))
-        {
+        if (!empty($materiaisAtualizar)) {
 
-            foreach($request->materiaisAtualizar as $material_venda)
-            {
-                RelVendaMaterial::updateReg($material_venda["id"],
-                        [
+            foreach ($request->materiaisAtualizar as $material_venda) {
+                RelVendaMaterial::updateReg(
+                    $material_venda["id"],
+                    [
                         'id_venda_rvm' => $id_venda,
                         'id_material_rvm' => $material_venda['id_material_rvm'],
                         'vlr_unit_material_rvm' => $material_venda['vlr_unit_material_rvm'],
                         'qtd_material_rvm' => $material_venda['qtd_material_rvm'],
-                        ]
-                    );
+                    ]
+                );
             }
         }
 
         $materiaisAtuais = RelVendaMaterial::getByIdVenda($id_venda);
 
-        if (empty($materiaisAtuais))
-        {
+        if (empty($materiaisAtuais)) {
             DB::rollBack();
             return response()->json([
                 'error' => 'A venda deverá ter ao menos um material.'
             ], 400);
         }
         Venda::updateReg($id_empresa, $id_venda, [
-            'desc_venda_vda'      => $request->desc_venda_vda,
-            'id_status_vda'       => $request->id_status_vda,
+            'desc_venda_vda' => $request->desc_venda_vda,
+            'id_status_vda' => $request->id_status_vda,
             'id_centro_custo_vda' => $request->id_centro_custo_vda,
-            'id_funcionario_vda'  => $request->id_funcionario_vda,
-            'id_cliente_vda'      => $request->id_cliente_vda,
+            'id_funcionario_vda' => $request->id_funcionario_vda,
+            'id_cliente_vda' => $request->id_cliente_vda,
+            'id_estoque_vda' => $request->id_estoque_vda,
         ]);
+        $combosExcluir = $request->input('idsCombosExcluir');
+        $combosAtualizar = $request->input('combosAtualizar');
+        $combosInserir = $request->input('combosInserir');
 
+        if (!empty($combosExcluir)) {
+            foreach ($combosExcluir as $id) {
+                RelVendaCombo::where('id', $id)->delete();
+            }
+        }
+
+        if (!empty($combosInserir)) {
+            foreach ($combosInserir as $combo) {
+                RelVendaCombo::create([
+                    'id_venda_rvc' => $id_venda,
+                    'id_combo_rvc' => $combo['id_combo'],
+                    'qtd_combo_rvc' => $combo['qtd_combo'],
+                ]);
+            }
+        }
+
+        if (!empty($combosAtualizar)) {
+            foreach ($combosAtualizar as $combo) {
+                RelVendaCombo::updateReg(
+                    $combo['id'],
+                    [
+                        'id_venda_rvc' => $id_venda,
+                        'id_combo_rvc' => $combo['id_combo'],
+                        'qtd_combo_rvc' => $combo['qtd_combo'],
+                    ]
+                );
+            }
+        }
         $novoStatus = Status::getById($request->id_status_vda);
         if (
             $novoStatus->status_sts == StatusVendaEnum::Cancelada->value &&
@@ -333,7 +410,8 @@ class VendaController extends Controller
         ], 201);
     }
 
-    public function finalizar(Int $id_venda, Request $request) {
+    public function finalizar(int $id_venda, Request $request)
+    {
         $id_empresa = $this->getIdEmpresa($request);
 
         $origem = OrigemStatusEnum::Venda->value;
@@ -371,9 +449,10 @@ class VendaController extends Controller
         $this->materialMovimentacaoController->create($movimentacaoRequest, 'saida');
 
         Venda::atualizarStatus($id_empresa, $id_venda, $status->id_status_sts);
-  }
+    }
 
-    public function cancelar(Int $id_venda, Request $request) {
+    public function cancelar(int $id_venda, Request $request)
+    {
         $id_empresa = $this->getIdEmpresa($request);
 
         $origem = OrigemStatusEnum::Venda->value;
@@ -386,6 +465,7 @@ class VendaController extends Controller
 
         $movimentacaoRequest = new Request([
             'id_centro_custo_mov' => $venda->id_centro_custo_vda,
+            'id_estoque_mov' => $venda->id_estoque_vda,
             'materiais' => array_map(function ($material) {
                 return [
                     'id_material_mte' => $material['id_material_rvm'],
@@ -411,6 +491,7 @@ class VendaController extends Controller
             if (!$estoqueItem || $estoqueItem->qtd_estoque_item_eti < $material['qtd_material_rvm']) {
                 $saldoInsuficiente[] = [
                     'id_material' => $material['id_material_rvm'],
+                    'des_material_mte' => $material['des_material_mte'],
                     'qtd_disponivel' => $estoqueItem->qtd_estoque_item_eti ?? 0,
                     'qtd_requerida' => $material['qtd_material_rvm'],
                 ];
@@ -426,7 +507,7 @@ class VendaController extends Controller
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
-        $data = $this->vendaRepository->getTotalMateriaisPorVenda($centrosCusto,$dataInicio,$dataFim);
+        $data = $this->vendaRepository->getTotalMateriaisPorVenda($centrosCusto, $dataInicio, $dataFim);
 
         return response()->json($data);
     }
@@ -437,7 +518,7 @@ class VendaController extends Controller
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
-        $data = $this->vendaRepository->getValorMateriaisPorVenda($centrosCusto,$dataInicio,$dataFim);
+        $data = $this->vendaRepository->getValorMateriaisPorVenda($centrosCusto, $dataInicio, $dataFim);
 
         foreach ($data as $item) {
             $item->valor_total_vendido = FormatterValue::formatterMoney($item->valor_total_vendido);
@@ -452,7 +533,7 @@ class VendaController extends Controller
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
-        $data = $this->vendaRepository->getTopTresFuncionariosPorVenda($centrosCusto,$dataInicio,$dataFim);
+        $data = $this->vendaRepository->getTopTresFuncionariosPorVenda($centrosCusto, $dataInicio, $dataFim);
 
         foreach ($data as $item) {
             $item->valor_total_vendido = FormatterValue::formatterMoney($item->valor_total_vendido);
@@ -467,7 +548,7 @@ class VendaController extends Controller
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
-        $data = $this->vendaRepository->getVendasPorCentroCusto($centrosCusto,$dataInicio,$dataFim);
+        $data = $this->vendaRepository->getVendasPorCentroCusto($centrosCusto, $dataInicio, $dataFim);
 
         foreach ($data as $item) {
             $item->valor_total_vendido = FormatterValue::formatterMoney($item->valor_total_vendido);
@@ -482,7 +563,7 @@ class VendaController extends Controller
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
-        $data = $this->vendaRepository->getVendasPorCliente($centrosCusto,$dataInicio,$dataFim);
+        $data = $this->vendaRepository->getVendasPorCliente($centrosCusto, $dataInicio, $dataFim);
 
         foreach ($data as $item) {
             $item->valor_total_vendido = FormatterValue::formatterMoney($item->valor_total_vendido);
@@ -497,7 +578,7 @@ class VendaController extends Controller
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
-        $data = $this->vendaRepository->getTotalVendasPorOrigemCliente($centrosCusto,$dataInicio,$dataFim);
+        $data = $this->vendaRepository->getTotalVendasPorOrigemCliente($centrosCusto, $dataInicio, $dataFim);
 
         return response()->json($data);
     }

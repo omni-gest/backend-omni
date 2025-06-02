@@ -7,8 +7,9 @@ use App\Models\Combo;
 
 class ComboRepository implements ComboRepositoryInterface
 {
-    public function create($request)
+    public function create($request, $id_empresa_cmb)
     {
+        $request['id_empresa_cmb'] = $id_empresa_cmb;
         $result = Combo::create($request);
 
         return $result;
@@ -32,7 +33,7 @@ class ComboRepository implements ComboRepositoryInterface
     }
 
 
-    public function getById($id_combo, $id_empresa)
+    public function getById($id_empresa, $id_combo)
     {
         $result = Combo::getById($id_combo, $id_empresa);
 

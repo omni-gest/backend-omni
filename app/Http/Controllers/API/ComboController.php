@@ -10,16 +10,16 @@ use Illuminate\Support\Facades\Validator;
 
 class ComboController extends Controller
 {
-    
+
     public function __construct(
-       private ComboRepositoryInterface $comboRepository,
-       private RelComboMaterialRepositoryInterface $relComboRepository
-       )
-    {
+        private ComboRepositoryInterface $comboRepository,
+        private RelComboMaterialRepositoryInterface $relComboRepository
+    ) {
     }
 
-    public function getIdEmpresa(Request $request) {
-        $id_empresa = (int)$request->header('id-empresa-d');
+    public function getIdEmpresa(Request $request)
+    {
+        $id_empresa = (int) $request->header('id-empresa-d');
 
         return $id_empresa;
     }
@@ -29,11 +29,12 @@ class ComboController extends Controller
         $id_empresa = $this->getIdEmpresa($request);
 
         $validator = Validator::make($request->all(), [
-            'desc_combo_cmb'       => 'required|string|max:255',
-            'id_empresa_cmb'       => 'required|integer',
-            'id_centro_custo_cmb'  => 'required|integer',
-            'materiais'            => 'required|array|min:1',
+            'desc_combo_cmb' => 'required|string|max:255',
+            'id_centro_custo_cmb' => 'required|integer',
+            'vlr_combo_cmb' => 'required|integer',
+            'materiais' => 'required|array|min:1',
             'materiais.*.id_material_cbm' => 'required|integer',
+            'materiais.*.qtd_material_cbm' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -45,8 +46,9 @@ class ComboController extends Controller
 
         foreach ($request->materiais as $material) {
             $dadosMaterial = [
-                'id_combo_cbm'    => $id_combo_cbm,
+                'id_combo_cbm' => $id_combo_cbm,
                 'id_material_cbm' => $material['id_material_cbm'],
+                'qtd_material_cbm' => $material['qtd_material_cbm'],
             ];
             $this->relComboRepository->create($dadosMaterial, $id_empresa);
         }
@@ -73,24 +75,24 @@ class ComboController extends Controller
             return $data;
         }
 
-        $queryParams = (object)[
+        $queryParams = (object) [
             'filter' => $request->input('filter'),
             'perPage' => $request->input('perPage', 10),
             'pageNumber' => $request->input('page', 1),
-            'id_centro_custo_cmb' => $request->input('id_centro_custo') ?? $id_centro_custo,
+            'id_centro_custo_cmb' => $request->input('er') ?? $id_centro_custo,
         ];
 
         return $this->comboRepository->getAll($id_empresa, $queryParams);
     }
 
 
-    public function update(Request $request, Int $id_combo){
+    public function update(Request $request, int $id_combo)
+    {
         $id_empresa = $this->getIdEmpresa($request);
 
         $validator = Validator::make($request->all(), [
-            'desc_combo_cmb'        => 'required|string|max:255',
-            'id_empresa_cmb'        => 'required|integer',
-            'id_centro_custo_cmb'   => 'required|integer',
+            'desc_combo_cmb' => 'required|string|max:255',
+            'id_centro_custo_cmb' => 'required|integer',
         ]);
 
         if ($validator->fails()) {

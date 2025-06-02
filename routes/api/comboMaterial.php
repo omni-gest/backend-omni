@@ -17,4 +17,5 @@ use App\Http\Controllers\API\ComboMaterialController;
 
 Route::controller(ComboMaterialController::class)->group(function () {
     Route::post('', 'create');
+    Route::get('', 'get');
 });

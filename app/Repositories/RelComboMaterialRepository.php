@@ -7,8 +7,9 @@ use App\Models\RelComboMaterial;
 
 class RelComboMaterialRepository implements RelComboMaterialRepositoryInterface
 {
-    public function create($request)
+    public function create($request, $id_empresa)
     {
+        $request['id_empresa_cbm'] = $id_empresa;
         $result = RelComboMaterial::create($request);
 
         return $result;
