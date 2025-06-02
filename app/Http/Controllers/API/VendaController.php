@@ -462,6 +462,37 @@ class VendaController extends Controller
         Venda::atualizarStatus($id_empresa, $id_venda, $status->id_status_sts);
 
         $materiaisAtuais = RelVendaMaterial::getByIdVenda($id_venda);
+        $combosAtuais = RelVendaCombo::where('id_venda_rvc', $id_venda)->get();
+        foreach ($combosAtuais as $comboVenda) {
+            $combo = $this->comboRepository->getById($comboVenda->id_combo_rvc, $id_empresa);
+            $materiaisCombo = is_array($combo) ? $combo['materiais'] : $combo->materiais;
+
+            foreach ($materiaisCombo as $material_combo) {
+                $id = is_array($material_combo) ? $material_combo['id_material'] : $material_combo->id_material;
+                $qtd = (is_array($material_combo) ? $material_combo['qtd_material_cbm'] : $material_combo->qtd_material_cbm) * $comboVenda->qtd_combo_rvc;
+                $vlr = is_array($material_combo) ? $material_combo['vlr_material'] : $material_combo->vlr_material;
+
+                // Verifica se já existe esse material nos materiais atuais
+                $found = false;
+                foreach ($materiaisAtuais as &$mat) {
+                    if ($mat['id_material_rvm'] == $id) {
+                        $mat['qtd_material_rvm'] += $qtd;
+                        $found = true;
+                        break;
+                    }
+                }
+                unset($mat);
+
+                // Se não existe, adiciona
+                if (!$found) {
+                    $materiaisAtuais[] = [
+                        'id_material_rvm' => $id,
+                        'vlr_unit_material_rvm' => $vlr,
+                        'qtd_material_rvm' => $qtd,
+                    ];
+                }
+            }
+        }
 
         $movimentacaoRequest = new Request([
             'id_centro_custo_mov' => $venda->id_centro_custo_vda,
