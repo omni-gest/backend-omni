@@ -86,12 +86,12 @@ class ComboController extends Controller
     }
 
 
-    public function update(Request $request, int $id_combo)
+    public function update(Request $request)
     {
         $id_empresa = $this->getIdEmpresa($request);
 
         $validator = Validator::make($request->all(), [
-            'desc_combo_cmb' => 'required|string|max:255',
+            'des_combo_cmb' => 'required|string|max:255',
             'id_centro_custo_cmb' => 'required|integer',
         ]);
 
@@ -99,7 +99,19 @@ class ComboController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $updated_combo = $this->comboRepository->updateReg($id_empresa, $id_combo, $request);
+        $request->desc_combo_cmb = $request->des_combo_cmb;
+        $updated_combo = $this->comboRepository->updateReg($id_empresa, $request->id_combo_cmb, $request);
+
+        $this->relComboRepository->delete($request->id_combo_cmb, $id_empresa);
+
+        foreach ($request->materiais as $material) {
+            $dadosMaterial = [
+                'id_combo_cbm' => $request->id_combo_cmb,
+                'id_material_cbm' => $material['id_material_cbm'],
+                'qtd_material_cbm' => $material['qtd_material_cbm'],
+            ];
+            $this->relComboRepository->create($dadosMaterial, $id_empresa);
+        }
 
         return response()->json($updated_combo, 200);
     }

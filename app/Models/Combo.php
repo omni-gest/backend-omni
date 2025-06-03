@@ -118,6 +118,7 @@ class Combo extends Model
                 'tc.updated_at',
                 'tm.id_material_mte as id_material',
                 'tm.des_material_mte as nome_material',
+                'rcm.qtd_material_cbm',
                 'tu.des_reduz_unidade_und as nome_unidade',
                 'des_centro_custo_cco',
                 'tm.vlr_material_mte as vlr_material'
@@ -153,6 +154,7 @@ class Combo extends Model
                     return [
                         'id_material' => $item->id_material,
                         'nome_material' => $item->nome_material,
+                        'qtd_material' => $item->qtd_material_cbm,
                         'nome_unidade' => $item->nome_unidade,
                         'vlr_material' => $item->vlr_material,
                     ];

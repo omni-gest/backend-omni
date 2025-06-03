@@ -35,4 +35,12 @@ class RelComboMaterialRepository implements RelComboMaterialRepositoryInterface
 
         return $result;
     }
+    public function delete($id_combo_material, $id_empresa)
+    {
+        $result = RelComboMaterial::
+            where('id_combo_cbm', $id_combo_material)
+            ->delete();
+
+        return $result;
+    }
 }
