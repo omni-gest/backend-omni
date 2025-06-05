@@ -25,7 +25,7 @@ COPY . .
 # Instala as dependências do Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-RUN cat backend-omni/app/Repositories/EstoqueRepository.php
+RUN cat app/Repositories/EstoqueRepository.php
 
 # Gera a key da aplicação
 RUN php artisan key:generate
