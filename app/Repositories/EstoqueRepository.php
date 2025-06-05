@@ -10,8 +10,8 @@ class EstoqueRepository implements EstoqueRepositoryInterface
 {
     public function create($request, $id_empresa)
     {
-        Log::info('Criando estoque', ['request' => $request, 'id_empresa' => $id_empresa]);
-        $request['id_empresa_est'] = $id_empresa;
+        print('Criando estoque');
+          $request['id_empresa_est'] = $id_empresa;
         $result = Estoque::create($request);
 
         return $result;
