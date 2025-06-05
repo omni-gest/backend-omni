@@ -22,8 +22,6 @@ WORKDIR /var/www
 # Copia os arquivos do projeto
 COPY . .
 
-RUN git pull
-
 # Instala as dependências do Laravel
 RUN composer install --no-dev --optimize-autoloader
 
