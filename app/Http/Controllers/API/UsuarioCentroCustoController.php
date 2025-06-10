@@ -8,7 +8,7 @@ use App\Models\RelUsuarioCentroCusto;
 
 class UsuarioCentroCustoController extends Controller
 {
-     /**
+    /**
      * @OA\Post(
      *     path="/api/usuarioCentroCusto",
      *     summary="Associa centros de custo a um usuário",
