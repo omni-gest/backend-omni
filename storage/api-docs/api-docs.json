@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://sistema-generico-api.vercel.app/api/api"
+            "url": "http://127.0.0.1:8000/api"
         }
     ],
     "paths": {
@@ -1134,6 +1134,181 @@
                 }
             }
         },
+        "/estoqueItem": {
+            "get": {
+                "tags": [
+                    "Estoque"
+                ],
+                "summary": "Lista todos os estoques",
+                "operationId": "23ae9986fb4c1211caf0ceeb098d22ab",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Quantidade de itens por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filtro para buscar estoque",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page_number",
+                        "in": "query",
+                        "description": "Número da página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de estoque retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Estoque"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Estoque"
+                ],
+                "summary": "Cria um novo estoque",
+                "operationId": "c798a58d565c96d5869a8014121fd014",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "des_estoque_item_eti",
+                                    "id_centro_custo_eti",
+                                    "id_material_eti",
+                                    "id_empresa_eti",
+                                    "qtd_estoque_item_eti",
+                                    "id_estoque_eti"
+                                ],
+                                "properties": {
+                                    "des_estoque_item_eti": {
+                                        "type": "string"
+                                    },
+                                    "id_centro_custo_eti": {
+                                        "type": "integer"
+                                    },
+                                    "id_material_eti": {
+                                        "type": "integer"
+                                    },
+                                    "id_empresa_eti": {
+                                        "type": "integer"
+                                    },
+                                    "qtd_estoque_item_eti": {
+                                        "type": "integer"
+                                    },
+                                    "id_estoque_eti": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Estoque criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Estoque"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoqueItem/{id_estoque_item}": {
+            "put": {
+                "tags": [
+                    "Estoque"
+                ],
+                "summary": "Atualiza um estoque",
+                "operationId": "79fe3a55c6941ff7ebf2479150c599c1",
+                "parameters": [
+                    {
+                        "name": "id_estoque_item",
+                        "in": "path",
+                        "description": "ID do estoque item",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Estoque"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Estoque atualizado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/estoque/{id_estoque_item}": {
+            "delete": {
+                "tags": [
+                    "Estoque"
+                ],
+                "summary": "Deleta um estoque daquele produto",
+                "operationId": "260ea3b68e28a2445ce8e431d20dfb62",
+                "parameters": [
+                    {
+                        "name": "id_estoque_item",
+                        "in": "path",
+                        "description": "ID do estoque item",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estoque Item deletado com sucesso"
+                    }
+                }
+            }
+        },
         "/fornecedor": {
             "post": {
                 "tags": [
@@ -1736,7 +1911,7 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "txt_movimentacao_mov",
+                                    "des_estoque_item_eti",
                                     "id_estoque",
                                     "id_centro_custo_mov",
                                     "materiais"
@@ -2645,6 +2820,75 @@
                 }
             }
         },
+        "/servico/topThreeEmployees": {
+            "get": {
+                "tags": [
+                    "Servico"
+                ],
+                "summary": "Obtém o top 3 funcionarios por total de tipos de serviço lançados em serviços",
+                "operationId": "getTopThreeEmployeesByTotalTypeService",
+                "parameters": [
+                    {
+                        "name": "centros_custo",
+                        "in": "query",
+                        "description": "IDs dos centros de custo separados por vírgula",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1,2"
+                        }
+                    },
+                    {
+                        "name": "data_inicio",
+                        "in": "query",
+                        "description": "Data de início para o filtro (formato: Y-m-d H:i:s)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2025-04-14 00:00:00"
+                        }
+                    },
+                    {
+                        "name": "data_fim",
+                        "in": "query",
+                        "description": "Data de fim para o filtro (formato: Y-m-d H:i:s)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2025-04-16 23:59:59"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados da consulta",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "nome": {
+                                                "type": "string",
+                                                "example": "Corte de Cabelo"
+                                            },
+                                            "total_tipos_servico": {
+                                                "type": "integer",
+                                                "example": 42
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Serviço não encontrado"
+                    }
+                }
+            }
+        },
         "/servicoTipo": {
             "post": {
                 "tags": [
@@ -3164,7 +3408,7 @@
                     "UsuarioCentroCusto"
                 ],
                 "summary": "Obtém os centros de custo associados a um usuário",
-                "operationId": "6321158e4c8c93ece36b6a19d93a4447",
+                "operationId": "0d52b32d6a9c42078146ce5785ba6c87",
                 "parameters": [
                     {
                         "name": "id_user",
@@ -3456,6 +3700,45 @@
                     },
                     "is_ativo_est": {
                         "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "estoqueItem": {
+                "properties": {
+                    "id_estoque_item_eti": {
+                        "type": "integer"
+                    },
+                    "id_material_eti": {
+                        "description": "Chave estrangeira referenciando o Material",
+                        "type": "integer"
+                    },
+                    "id_empresa_eti": {
+                        "description": "Chave estrangeira referenciando a empresa",
+                        "type": "integer"
+                    },
+                    "id_centro_custo_eti": {
+                        "description": "Chave estrangeira referenciando o centro de Custo",
+                        "type": "integer"
+                    },
+                    "des_estoque_item_eti": {
+                        "type": "string"
+                    },
+                    "qtd_estoque_item_eti": {
+                        "description": "Quantidade do Item em Estoque",
+                        "type": "integer"
+                    },
+                    "id_estoque_eti": {
+                        "description": "Chave estrangeira referenciando o Estoque",
+                        "type": "integer"
                     },
                     "created_at": {
                         "type": "string",

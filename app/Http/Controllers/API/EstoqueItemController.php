@@ -22,31 +22,41 @@ class EstoqueItemController extends Controller
         return $id_empresa;
     }
 
-
     /**
      * @OA\Get(
-     *     path="/estoqueItem/{id_estoque_item}",
-     *     summary="Obtém um estoque item pelo ID",
-     *     tags={"EstoqueItem"},
+     *     path="/estoqueItem",
+     *     summary="Lista todos os estoques",
+     *     tags={"Estoque"},
      *     @OA\Parameter(
-     *         name="id_estoque_item",
-     *         in="path",
-     *         required=true,
-     *         description="ID do Estoque Item",
-     *         @OA\Schema(type="integer")
+     *         name="per_page",
+     *         in="query",
+     *         description="Quantidade de itens por página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="filter",
+     *         in="query",
+     *         description="Filtro para buscar estoque",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page_number",
+     *         in="query",
+     *         description="Número da página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Estoque Item encontrado",
-     *         @OA\JsonContent(ref="#/components/schemas/EstoqueItem")
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Estoque Item não encontrado"
+     *         description="Lista de estoque retornada com sucesso",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Estoque"))
      *     )
      * )
      */
-    public function get(Request $request, int $id_estoque = null)
+
+    public function get(Request $request, $id_estoque = null)
     {
         $id_empresa = $this->getIdEmpresa($request);
 
@@ -74,24 +84,34 @@ class EstoqueItemController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/estoque",
-     *     summary="Cria um novo estoque para o produto enviado",
-     *     tags={"EstoqueItem"},
+     *     path="/estoqueItem",
+     *     summary="Cria um novo estoque",
+     *     tags={"Estoque"},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/EstoqueItem")
+     *         @OA\JsonContent(
+     *             required={"des_estoque_item_eti", 
+     *                        "id_centro_custo_eti",
+     *                        "id_material_eti",
+     *                        "id_empresa_eti",
+     *                        "qtd_estoque_item_eti",
+     *                        "id_estoque_eti"},
+     *             @OA\Property(property="des_estoque_item_eti", type="string"),
+     *             @OA\Property(property="id_centro_custo_eti", type="integer"),
+     *             @OA\Property(property="id_material_eti", type="integer"),
+     *             @OA\Property(property="id_empresa_eti", type="integer"),
+     *             @OA\Property(property="qtd_estoque_item_eti", type="integer"),
+     *             @OA\Property(property="id_estoque_eti", type="integer")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Estoque criado com sucesso",
-     *         @OA\JsonContent(ref="#/components/schemas/EstoqueItem")
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Erro de validação"
+     *         @OA\JsonContent(ref="#/components/schemas/Estoque")
      *     )
      * )
      */
+    
     public function create(Request $request)
     {
         $request_formatted = current((array) $request->request);
