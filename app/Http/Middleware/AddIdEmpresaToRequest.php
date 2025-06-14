@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Log;
 
 class AddIdEmpresaToRequest
 {
@@ -18,6 +19,7 @@ class AddIdEmpresaToRequest
      */
     public function handle(Request $request, Closure $next)
     {
+        Log::info('DB_PASSWORD: ' . env('DB_PASSWORD'));
         // Verifica se o cabeçalho de autorização está presente
         if ($request->hasHeader('Authorization')) {
             $authHeader = $request->header('Authorization');
