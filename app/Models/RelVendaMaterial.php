@@ -31,7 +31,10 @@ class RelVendaMaterial extends Model
     }
 
     public static function getByIdVenda(Int $id_venda) {
-        $materiaisVenda = RelVendaMaterial::where('id_venda_rvm', $id_venda)->get();
+        $materiaisVenda = RelVendaMaterial::
+        where('id_venda_rvm', $id_venda)
+        ->join('tb_material as tm', 'tm.id_material_mte', '=', 'rel_venda_material.id_material_rvm')
+        ->get();
 
         return $materiaisVenda->toArray();
     }

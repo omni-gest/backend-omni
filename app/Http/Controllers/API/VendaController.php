@@ -426,7 +426,7 @@ class VendaController extends Controller
         if (!empty($saldoInsuficiente)) {
             $mensagem = "Saldo insuficiente para os seguintes materiais:";
             foreach ($saldoInsuficiente as $item) {
-                $mensagem .= "\n- Material ID: {$item['id_material']}, Quantidade disponível: {$item['qtd_disponivel']}, Quantidade requerida: {$item['qtd_requerida']}";
+                $mensagem .= "\n- Material: {$item['des_material_mte']}, Quantidade disponível: {$item['qtd_disponivel']}, Quantidade requerida: {$item['qtd_requerida']}";
             }
 
             DB::rollBack();
@@ -522,6 +522,7 @@ class VendaController extends Controller
             if (!$estoqueItem || $estoqueItem->qtd_estoque_item_eti < $material['qtd_material_rvm']) {
                 $saldoInsuficiente[] = [
                     'id_material' => $material['id_material_rvm'],
+                    'des_material_mte' => $material['des_material_mte'],
                     'qtd_disponivel' => $estoqueItem->qtd_estoque_item_eti ?? 0,
                     'qtd_requerida' => $material['qtd_material_rvm'],
                 ];
