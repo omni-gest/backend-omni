@@ -436,7 +436,7 @@ class VendaController extends Controller
         }
 
         $movimentacaoRequest = new Request([
-            'id_centro_custo_mov' => $venda->id_centro_custo_vda,
+            'id_estoque_mov' => $venda->id_centro_custo_vda,
             'materiais' => array_map(function ($material) {
                 return [
                     'id_material_mte' => $material['id_material_rvm'],
