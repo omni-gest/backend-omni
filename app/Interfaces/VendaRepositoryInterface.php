@@ -10,4 +10,5 @@ interface VendaRepositoryInterface
     public function getVendasPorCentroCusto($centros_custo,string $data_inicio,string $data_fim);
     public function getVendasPorCliente($centros_custo,string $data_inicio,string $data_fim);
     public function getTotalVendasPorOrigemCliente($centros_custo,string $data_inicio,string $data_fim);
+    public function getTotalVendas($centros_custo,string $data_inicio,string $data_fim);
 }

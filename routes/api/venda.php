@@ -23,6 +23,7 @@ Route::controller(VendaController::class)->group(function () {
     Route::get('topVendasPorCentroCusto', 'getVendasPorCentroCusto');
     Route::get('topVendasPorCliente', 'getVendasPorCliente');
     Route::get('totalVendasPorOrigemCliente', 'getTotalVendasPorOrigemCliente');
+    Route::get('totalVendas', 'getTotalVendas');
     Route::get('', 'get');
     Route::get('{id_venda}', 'get');
     Route::get('{id_venda}/materiais', 'getMateriais');

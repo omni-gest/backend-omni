@@ -25,7 +25,7 @@ class Venda extends Model
         'id_metodo_pagamento_vda',
     ];
 
-    public static function get(int $id_empresa, int $id = null, $filtros = null, $per_page = 1, $page_number = 0)
+    public static function get(int $id_empresa, $id = null, $filtros = null, $per_page = 1, $page_number = 0)
     {
         $paginator = Venda::select([
             'tb_venda.id_venda_vda',

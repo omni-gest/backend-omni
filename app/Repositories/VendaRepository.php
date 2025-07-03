@@ -48,4 +48,11 @@ class VendaRepository implements VendaRepositoryInterface
 
         return $result;
     }
+
+    public function getTotalVendas($centros_custo,string $data_inicio,string $data_fim)
+    {
+        $result = RelVendaMaterial::getTotalVendas($centros_custo,$data_inicio,$data_fim);
+
+        return $result;
+    }
 }

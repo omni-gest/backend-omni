@@ -199,6 +199,28 @@ class RelVendaMaterial extends Model
             ->get();
     }
 
+    public static function getTotalVendas($centrosCusto = [], $dataInicio = null, $dataFim = null)
+    {
+        $query = RelVendaMaterial::query()
+            ->from('rel_venda_material as rvm')
+            ->join('tb_venda as tv', 'tv.id_venda_vda', '=', 'rvm.id_venda_rvm')
+            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
+            ->where('tv.id_status_vda', 3);
+
+        if (!empty($centrosCusto)) {
+            $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
+        }
+
+        if ($dataInicio && $dataFim) {
+            $query->whereBetween('tv.created_at', [$dataInicio, $dataFim]);
+        }
+
+        return $query->selectRaw('
+            COUNT(*) as total_vendas,
+            SUM(rvm.qtd_material_rvm * rvm.vlr_unit_material_rvm) as valor_total
+        ')->first();
+    }
+
 
 
 

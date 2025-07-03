@@ -175,7 +175,7 @@ class VendaController extends Controller
     }
 
     // get
-    public function get(Request $request, int $id_venda = null)
+    public function get(Request $request, $id_venda = null)
     {
         $id_empresa = $this->getIdEmpresa($request);
 
@@ -194,7 +194,7 @@ class VendaController extends Controller
     }
 
     // get materiais
-    public function getMateriais(Request $request, int $id_venda = null)
+    public function getMateriais(Request $request, $id_venda = null)
     {
         $id_empresa = $this->getIdEmpresa($request);
 
@@ -610,6 +610,17 @@ class VendaController extends Controller
         $dataFim = $request->query('data_fim');
 
         $data = $this->vendaRepository->getTotalVendasPorOrigemCliente($centrosCusto, $dataInicio, $dataFim);
+
+        return response()->json($data);
+    }
+
+    public function getTotalVendas(Request $request)
+    {
+        $centrosCusto = explode(',', $request->query('centros_custo'));
+        $dataInicio = $request->query('data_inicio');
+        $dataFim = $request->query('data_fim');
+
+        $data = $this->vendaRepository->getTotalVendas($centrosCusto, $dataInicio, $dataFim);
 
         return response()->json($data);
     }
