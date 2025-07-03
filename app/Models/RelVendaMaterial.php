@@ -216,10 +216,11 @@ class RelVendaMaterial extends Model
         }
 
         return $query->selectRaw('
-            COUNT(*) as total_vendas,
+            COUNT(DISTINCT tv.id_venda_vda) as total_vendas,
             SUM(rvm.qtd_material_rvm * rvm.vlr_unit_material_rvm) as valor_total
         ')->first();
     }
+
 
 
 
