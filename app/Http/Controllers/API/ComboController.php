@@ -91,7 +91,7 @@ class ComboController extends Controller
         $id_empresa = $this->getIdEmpresa($request);
 
         $validator = Validator::make($request->all(), [
-            'des_combo_cmb' => 'required|string|max:255',
+            'desc_combo_cmb' => 'required|string|max:255',
             'id_centro_custo_cmb' => 'required|integer',
         ]);
 
@@ -99,7 +99,6 @@ class ComboController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $request->desc_combo_cmb = $request->des_combo_cmb;
         $updated_combo = $this->comboRepository->updateReg($id_empresa, $request->id_combo_cmb, $request);
 
         $this->relComboRepository->delete($request->id_combo_cmb, $id_empresa);
