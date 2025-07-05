@@ -157,6 +157,8 @@ class VendaController extends Controller
                 $movimentacaoRequest->headers->set('id-empresa-d', $id_empresa);
 
                 $this->materialMovimentacaoController->create($movimentacaoRequest, 'saida');
+
+                Venda::lancarVendaFinanceiro($venda->id);
             }
 
             DB::commit();
@@ -449,6 +451,7 @@ class VendaController extends Controller
         $this->materialMovimentacaoController->create($movimentacaoRequest, 'saida');
 
         Venda::atualizarStatus($id_empresa, $id_venda, $status->id_status_sts);
+        Venda::lancarVendaFinanceiro($id_venda);
     }
 
     public function cancelar(int $id_venda, Request $request)

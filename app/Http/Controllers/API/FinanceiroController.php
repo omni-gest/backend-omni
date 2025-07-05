@@ -38,7 +38,6 @@ class FinanceiroController extends Controller
             'tipo_referencia_fin'     => 'required|in:0,1,2,3', // 0 = manual, 1 = venda, 2 = serviço, 3 = compra, etc.
         ]);
 
-
         if ($validator->fails()) {
         return response()->json(['errors' => $validator->errors()], 422);
         }

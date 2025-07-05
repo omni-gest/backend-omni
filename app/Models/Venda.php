@@ -144,4 +144,46 @@ class Venda extends Model
                 'id_status_vda' => $id_status_sts
             ]);
     }
+
+    public static function lancarVendaFinanceiro(Int $id_venda_vda)
+    {
+        DB::insert("
+                INSERT INTO tb_financeiro (
+                    desc_financeiro_fin,
+                    vlr_financeiro_fin,
+                    tipo_transacao_fin,
+                    id_empresa_fin,
+                    id_centro_custo_fin,
+                    id_metodo_pagamento_fin,
+                    is_ativo_fin,
+                    tipo_referencia_fin,
+                    id_venda_fin,
+                    created_at
+                )
+                SELECT
+                    COALESCE(v.desc_venda_vda, 'Venda') AS desc_financeiro_fin,
+                    COALESCE(SUM(vm.vlr_unit_material_rvm * vm.qtd_material_rvm), 0) +
+                    COALESCE(SUM(c.vlr_combo_cmb * rvc.qtd_combo_rvc), 0) AS vlr_financeiro_fin,
+                    0 AS tipo_transacao_fin,
+                    v.id_empresa_vda AS id_empresa_fin,
+                    v.id_centro_custo_vda AS id_centro_custo_fin,
+                    v.id_metodo_pagamento_vda AS id_metodo_pagamento_fin,
+                    1 AS is_ativo_fin,
+                    1 AS tipo_referencia_fin,
+                    v.id_venda_vda,
+                    v.created_at
+                FROM tb_venda v
+                LEFT JOIN rel_venda_material vm ON vm.id_venda_rvm = v.id_venda_vda
+                LEFT JOIN rel_venda_combo rvc ON rvc.id_venda_rvc = v.id_venda_vda
+                LEFT JOIN tb_combo c ON c.id_combo_cmb = rvc.id_combo_rvc
+                WHERE v.id_venda_vda = ?
+                GROUP BY
+                    v.id_venda_vda,
+                    v.desc_venda_vda,
+                    v.id_centro_custo_vda,
+                    v.id_metodo_pagamento_vda,
+                    v.created_at,
+                    v.id_empresa_vda
+        ", [$id_venda_vda]);
+    }
 }
