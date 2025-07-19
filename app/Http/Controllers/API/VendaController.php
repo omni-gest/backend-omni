@@ -129,9 +129,7 @@ class VendaController extends Controller
 
             $status = Status::getById($request->id_status_vda);
             if ($status->status_sts == StatusVendaEnum::Finalizada->value) {
-
                 $saldoInsuficiente = $this->validarSaldo($request->materiais, $request->id_estoque_est, $id_empresa);
-
                 if (!empty($saldoInsuficiente)) {
                     $mensagem = "Saldo insuficiente para os seguintes materiais:";
                     foreach ($saldoInsuficiente as $item) {
@@ -424,7 +422,6 @@ class VendaController extends Controller
         $materiaisAtuais = RelVendaMaterial::getByIdVenda($id_venda);
 
         $saldoInsuficiente = $this->validarSaldo($materiaisAtuais, $venda->id_estoque_vda, $id_empresa);
-
         if (!empty($saldoInsuficiente)) {
             $mensagem = "Saldo insuficiente para os seguintes materiais:";
             foreach ($saldoInsuficiente as $item) {
@@ -521,8 +518,12 @@ class VendaController extends Controller
                 $id_estoque_est,
                 $material['id_material_rvm']
             );
-
             if (!$estoqueItem || $estoqueItem->qtd_estoque_item_eti < $material['qtd_material_rvm']) {
+                if (!isset($material['des_material_mte']) || empty($material['des_material_mte'])) {
+                    $matObj = Material::where('id_material_mte', $material['id_material_rvm'])->first();
+                    $material['des_material_mte'] = $matObj ? $matObj->des_material_mte : '';
+                }
+
                 $saldoInsuficiente[] = [
                     'id_material' => $material['id_material_rvm'],
                     'des_material_mte' => $material['des_material_mte'],
