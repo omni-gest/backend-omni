@@ -117,7 +117,6 @@ class ClienteController extends Controller
             'pageNumber' => $request->query('page_number', 1),
             'id_centro_custo_cli' => $request->query('id_centro_custo_cli', null),
         ];
-
         $queryParams->perPage = ($queryParams->perPage > 50) ? 50 : $queryParams->perPage;
 
         $result = $this->clienteRepository->getAll($id_empresa, $queryParams);
