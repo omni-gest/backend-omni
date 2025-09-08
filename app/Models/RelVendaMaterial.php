@@ -154,6 +154,8 @@ class RelVendaMaterial extends Model
             ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
             ->join('tb_cliente as tc', 'tc.id_cliente_cli', '=', 'tv.id_cliente_vda');
 
+            $query->whereIn("tb_venda.id_status_sts", [1,2,3]);
+
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
         }
