@@ -45,7 +45,8 @@ class RelVendaMaterial extends Model
             ->from('rel_venda_material as rvm')
             ->join('tb_venda as tv', 'tv.id_venda_vda', '=', 'rvm.id_venda_rvm')
             ->join('tb_material as tm', 'tm.id_material_mte', '=', 'rvm.id_material_rvm')
-            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda');
+            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
+            ->where('tv.id_status_vda', 3);
 
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
@@ -71,8 +72,8 @@ class RelVendaMaterial extends Model
             ->from('rel_venda_material as rvm')
             ->join('tb_venda as tv', 'tv.id_venda_vda', '=', 'rvm.id_venda_rvm')
             ->join('tb_material as tm', 'tm.id_material_mte', '=', 'rvm.id_material_rvm')
-            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda');
-
+            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
+            ->where('tv.id_status_vda', 3);
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
         }
@@ -98,8 +99,8 @@ class RelVendaMaterial extends Model
             ->join('tb_venda as tv', 'tv.id_venda_vda', '=', 'rvm.id_venda_rvm')
             ->join('tb_material as tm', 'tm.id_material_mte', '=', 'rvm.id_material_rvm')
             ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
-            ->join('tb_funcionarios as tf', 'tv.id_funcionario_vda', '=', 'tf.id_funcionario_tfu');
-
+            ->join('tb_funcionarios as tf', 'tv.id_funcionario_vda', '=', 'tf.id_funcionario_tfu')
+            ->where('tv.id_status_vda', 3);
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
         }
@@ -125,8 +126,8 @@ class RelVendaMaterial extends Model
             ->from('rel_venda_material as rvm')
             ->join('tb_venda as tv', 'tv.id_venda_vda', '=', 'rvm.id_venda_rvm')
             ->join('tb_material as tm', 'tm.id_material_mte', '=', 'rvm.id_material_rvm')
-            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda');
-
+            ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
+            ->where('tv.id_status_vda', 3);
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
         }
@@ -152,9 +153,8 @@ class RelVendaMaterial extends Model
             ->from('rel_venda_material as rvm')
             ->join('tb_venda as tv', 'tv.id_venda_vda', '=', 'rvm.id_venda_rvm')
             ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
-            ->join('tb_cliente as tc', 'tc.id_cliente_cli', '=', 'tv.id_cliente_vda');
-
-            $query->whereIn("tb_venda.id_status_sts", [1,2,3]);
+            ->join('tb_cliente as tc', 'tc.id_cliente_cli', '=', 'tv.id_cliente_vda')
+            ->where('tv.id_status_vda', 3);
 
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
@@ -183,6 +183,7 @@ class RelVendaMaterial extends Model
             ->join('tb_centro_custo as tcc', 'tcc.id_centro_custo_cco', '=', 'tv.id_centro_custo_vda')
             ->join('tb_cliente as tc', 'tc.id_cliente_cli', '=', 'tv.id_cliente_vda')
             ->join('tb_origem_cliente as toc', 'toc.id_origem_cliente_orc', '=', 'tc.id_origem_cliente_cli');
+            $query->whereIn("tv.id_status_vda", [1,2,3]);
 
         if (!empty($centrosCusto)) {
             $query->whereIn('tcc.id_centro_custo_cco', $centrosCusto);
