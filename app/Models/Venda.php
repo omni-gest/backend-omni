@@ -53,8 +53,7 @@ class Venda extends Model
             ->where('tb_venda.is_deleted', 0)
             ->where('tb_venda.id_empresa_vda', $id_empresa)
             ->groupBy('tb_venda.id_venda_vda', 'tb_venda.id_funcionario_vda', 'tb_funcionarios.desc_funcionario_tfu')
-            ->orderBy('id_venda_vda', 'desc')
-            ->paginate($per_page, ['*'], 'page', $page_number);
+            ->orderBy('id_venda_vda', 'desc');
 
         if ($filtros) {
             $paginator = $paginator->where($filtros);
@@ -63,6 +62,8 @@ class Venda extends Model
         if ($id) {
             $paginator = $paginator->where('id_venda_vda', $id);
             return $paginator->first();
+        } else {
+            $paginator = $paginator->paginate($per_page, ['*'], 'page', $page_number);
         }
 
         return response()->json([

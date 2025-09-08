@@ -248,7 +248,7 @@ class VendaController extends Controller
                 'error' => 'Status é um campo obrigatório.'
             ], 400);
         }
-
+        dd($id_venda);
         $venda = Venda::get($id_empresa, $id_venda, null);
 
         if (!$venda) {
@@ -418,7 +418,6 @@ class VendaController extends Controller
         $status = StatusVendaEnum::Finalizada->value;
         $status = Status::getByOrigemStatus($origem, $status);
         $venda = Venda::get($id_empresa, $id_venda, null);
-
         $materiaisAtuais = RelVendaMaterial::getByIdVenda($id_venda);
 
         $saldoInsuficiente = $this->validarSaldo($materiaisAtuais, $venda->id_estoque_vda, $id_empresa);
